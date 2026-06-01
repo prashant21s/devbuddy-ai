@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  placementScore Int @default(0)
+  githubScore    Int @default(0)
+  leetcodeScore  Int @default(0)
+  resumeScore    Int @default(0)
+
+  githubUsername   String?
+  leetcodeUsername String?
+  portfolioUrl     String?
+
+  roadmapItems RoadmapItem[]
+  interviews   Interview[]
+}
+
+model RoadmapItem {
+  id          String   @id @default(cuid())
+  userId      String
+  week        String
+  title       String
+  description String
+  status      String   @default("todo")
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Interview {
+  id        String   @id @default(cuid())
+  userId    String
+  topic     String
+  score     Int?
+  feedback  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
