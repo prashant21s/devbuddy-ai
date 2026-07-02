@@ -1,5 +1,5 @@
 import { demoSkillMetrics, findWeakAreas } from "@/lib/devbuddy"
-import { callClaude } from "@/lib/ai"
+import { callGemini } from "@/lib/ai"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const weakAreas = findWeakAreas(demoSkillMetrics, 5)
   const system =
     "Return only compact JSON with a roadmap array. Each item must include week, title, outcomes, and hours."
-  const generated = await callClaude(system, [
+  const generated = await callGemini(system, [
     {
       role: "user",
       content: `Create a weekly placement roadmap for ${targetCompany}. Weak areas: ${weakAreas.join(", ")}. Available hours per week: ${weeklyHours}.`,
@@ -21,14 +21,14 @@ export async function POST(request: Request) {
       return NextResponse.json({
         targetCompany,
         weeklyHours,
-        provider: "claude",
+        provider: "gemini",
         ...JSON.parse(generated),
       })
     } catch {
       return NextResponse.json({
         targetCompany,
         weeklyHours,
-        provider: "claude-text",
+        provider: "gemini-text",
         roadmap: [
           {
             week: "Week 1",
