@@ -22,7 +22,7 @@ export default function Sidebar() {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
             D
           </div>
-          <span className="text-white font-semibold text-sm">DevBuddy AI</span>
+          <span className="text-white font-semibold text-sm">PlacementBuddy</span>
         </div>
       </div>
 

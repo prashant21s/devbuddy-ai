@@ -11,7 +11,7 @@ export default function Home() {
               Placement readiness cockpit
             </p>
             <h1 className="mt-4 text-5xl font-semibold leading-tight text-white md:text-6xl">
-              DevBuddy AI
+              PlacementBuddy
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
               Analyze resume, GitHub, LeetCode, and portfolio signals, then convert weak areas into mock interviews, job matches, and a weekly roadmap.

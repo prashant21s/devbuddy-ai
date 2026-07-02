@@ -1,6 +1,6 @@
-# DevBuddy AI Architecture
+# PlacementBuddy Architecture
 
-DevBuddy AI is a placement-readiness platform with a Next.js App Router frontend, a PostgreSQL persistence layer, and AI/provider adapters for profile analysis, mock interviews, job matching, and personalized roadmaps.
+PlacementBuddy is a placement-readiness platform with a Next.js App Router frontend, a PostgreSQL persistence layer, and AI/provider adapters for profile analysis, mock interviews, job matching, and personalized roadmaps.
 
 ## Runtime Shape
 

@@ -1,4 +1,4 @@
-# Deploy DevBuddy AI
+# Deploy PlacementBuddy
 
 This project can deploy as one Vercel app. The frontend pages and backend route handlers share the same domain, so the final result is a single website link.
 
