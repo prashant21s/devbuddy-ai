@@ -1,66 +1,129 @@
+"use client"
+
+import { useState } from "react"
+import { candidate, placementScore, sourceAnalyses } from "@/lib/demo-data"
+
+type AnalysisResult = {
+  source: string
+  status: string
+  score: number
+  skills: string[]
+  gaps: string[]
+  summary: string
+  nextIntegration: string
+}
+
 export default function ProfilePage() {
-  const sources = [
-    { icon: "📄", title: "Resume", desc: "Prashant_Resume_2025.pdf · Last analyzed today", status: "Connected", statusColor: "text-green-400 bg-green-900" },
-    { icon: "🐙", title: "GitHub", desc: "github.com/prashant21s · 18 repos · Last synced 2h ago", status: "Connected", statusColor: "text-green-400 bg-green-900" },
-    { icon: "💻", title: "LeetCode", desc: "148 solved · Top 22% · Easy: 62, Medium: 79, Hard: 7", status: "Connected", statusColor: "text-green-400 bg-green-900" },
-    { icon: "🌐", title: "Portfolio Website", desc: "Not connected yet — add your portfolio URL", status: "Pending", statusColor: "text-yellow-400 bg-yellow-900" },
-  ]
+  const [selectedSource, setSelectedSource] = useState("resume")
+  const [portfolioUrl, setPortfolioUrl] = useState("")
+  const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  async function analyze() {
+    setLoading(true)
+    const response = await fetch("/api/profile/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: selectedSource, portfolioUrl }),
+    })
+    const data = await response.json()
+    setResult(data)
+    setLoading(false)
+  }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white">👤 My Profile</h1>
-        <p className="text-gray-400 mt-1">Manage your connected data sources</p>
+        <p className="text-sm font-medium uppercase tracking-[0.16em] text-cyan-300">Profile analyzer</p>
+        <h1 className="mt-2 text-3xl font-semibold text-white">Connected career profile</h1>
+        <p className="mt-2 text-slate-400">
+          Upload or connect sources, normalize them into skill signals, and refresh placement readiness.
+        </p>
       </div>
 
-      {/* User Card */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 flex items-center gap-4">
-        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-          PK
-        </div>
-        <div>
-          <h2 className="text-white font-semibold text-lg">Prashant Kumar</h2>
-          <p className="text-gray-400 text-sm">B.Tech Computer Science · Year 4</p>
-          <p className="text-gray-500 text-xs mt-1">Member since June 2025</p>
-        </div>
-        <div className="ml-auto">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-blue-400">73</p>
-            <p className="text-gray-500 text-xs">Placement Score</p>
+      <section className="mb-6 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-400 text-xl font-bold text-slate-950">
+              {candidate.initials}
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">{candidate.name}</h2>
+              <p className="text-sm text-slate-400">
+                {candidate.degree} - {candidate.year}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{candidate.targetCompany}</p>
+            </div>
+          </div>
+          <div className="mt-6 rounded-lg border border-slate-800 bg-slate-950 p-4">
+            <p className="text-sm text-slate-400">Placement score</p>
+            <p className="mt-2 text-4xl font-semibold text-white">{placementScore}</p>
           </div>
         </div>
-      </div>
 
-      {/* Data Sources */}
-      <h2 className="text-white font-medium mb-3">Connected Data Sources</h2>
-      <div className="flex flex-col gap-3">
-        {sources.map((src) => (
-          <div key={src.title} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center gap-4">
-            <span className="text-2xl">{src.icon}</span>
-            <div className="flex-1">
-              <h3 className="text-white text-sm font-medium">{src.title}</h3>
-              <p className="text-gray-500 text-xs mt-0.5">{src.desc}</p>
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-lg font-semibold text-white">Run analyzer</h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-[180px_1fr_auto]">
+            <select
+              value={selectedSource}
+              onChange={(event) => setSelectedSource(event.target.value)}
+              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
+            >
+              <option value="resume">Resume</option>
+              <option value="github">GitHub</option>
+              <option value="leetcode">LeetCode</option>
+              <option value="portfolio">Portfolio</option>
+            </select>
+            <input
+              value={portfolioUrl}
+              onChange={(event) => setPortfolioUrl(event.target.value)}
+              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
+              placeholder="Profile URL, username, or upload reference"
+            />
+            <button
+              onClick={analyze}
+              disabled={loading}
+              className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
+            >
+              {loading ? "Analyzing" : "Analyze"}
+            </button>
+          </div>
+
+          {result && (
+            <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950 p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-white">{result.source.toUpperCase()} analysis</p>
+                <span className="text-sm font-semibold text-cyan-300">{result.score}/100</span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-300">{result.summary}</p>
+              <p className="mt-3 text-xs leading-5 text-slate-500">{result.nextIntegration}</p>
             </div>
-            <span className={`text-xs px-3 py-1 rounded-full ${src.statusColor}`}>
-              {src.status}
-            </span>
+          )}
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        {sourceAnalyses.map((source) => (
+          <div key={source.source} className="rounded-lg border border-slate-800 bg-slate-900 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-white">{source.source}</h2>
+                <p className="mt-1 text-sm text-slate-400">{source.summary}</p>
+              </div>
+              <span className="rounded bg-slate-800 px-3 py-1 text-sm font-semibold text-cyan-300">
+                {source.score}
+              </span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {source.metrics.map((metric) => (
+                <span key={metric} className="rounded bg-slate-950 px-2 py-1 text-xs text-slate-300">
+                  {metric}
+                </span>
+              ))}
+            </div>
           </div>
         ))}
-      </div>
-
-      {/* Add Portfolio */}
-      <div className="mt-6 bg-gray-900 border border-dashed border-gray-700 rounded-xl p-5">
-        <p className="text-gray-400 text-sm mb-3">🌐 Add Portfolio URL</p>
-        <div className="flex gap-3">
-          <input
-            className="flex-1 bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
-            placeholder="https://yourportfolio.dev"
-          />
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-            Connect
-          </button>
-        </div>
-      </div>
+      </section>
     </div>
   )
 }

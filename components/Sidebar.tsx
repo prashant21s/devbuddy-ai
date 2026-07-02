@@ -1,58 +1,60 @@
 "use client"
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navItems = [
-  { href: "/dashboard", icon: "📊", label: "Dashboard" },
-  { href: "/dashboard/skills", icon: "🎯", label: "Skills Gap" },
-  { href: "/dashboard/roadmap", icon: "🗺️", label: "Roadmap" },
-  { href: "/dashboard/interview", icon: "🤖", label: "Mock Interview" },
-  { href: "/dashboard/jobs", icon: "💼", label: "Job Match" },
-  { href: "/dashboard/profile", icon: "👤", label: "My Profile" },
+  { href: "/dashboard", icon: "DB", label: "Dashboard" },
+  { href: "/dashboard/skills", icon: "SK", label: "Skills Gap" },
+  { href: "/dashboard/roadmap", icon: "RM", label: "Roadmap" },
+  { href: "/dashboard/interview", icon: "AI", label: "Mock Interview" },
+  { href: "/dashboard/jobs", icon: "JB", label: "Job Match" },
+  { href: "/dashboard/profile", icon: "PF", label: "My Profile" },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-56 min-h-screen bg-gray-900 border-r border-gray-800 flex flex-col">
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+    <aside className="hidden min-h-screen w-60 flex-col border-r border-slate-800 bg-slate-950 md:flex">
+      <div className="border-b border-slate-800 p-6">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400 text-sm font-bold text-slate-950">
             D
           </div>
-          <span className="text-white font-semibold text-sm">DevBuddy AI</span>
-        </div>
+          <span className="text-sm font-semibold text-white">DevBuddy AI</span>
+        </Link>
       </div>
 
-      <nav className="flex-1 p-4 flex flex-col gap-1">
+      <nav className="flex flex-1 flex-col gap-1 p-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive
-                  ? "bg-blue-600 text-white font-medium"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+                  ? "bg-cyan-400 font-medium text-slate-950"
+                  : "text-slate-400 hover:bg-slate-900 hover:text-white"
               }`}
             >
-              <span>{item.icon}</span>
+              <span className="w-6 text-[10px] font-semibold">{item.icon}</span>
               <span>{item.label}</span>
             </Link>
           )
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
+      <div className="border-t border-slate-800 p-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white">
             PK
           </div>
           <div>
-            <p className="text-white text-xs font-medium">Prashant</p>
-            <p className="text-gray-500 text-xs">B.Tech CSE · Year 4</p>
+            <p className="text-xs font-medium text-white">Prashant</p>
+            <p className="text-xs text-slate-500">B.Tech CSE - Final year</p>
           </div>
         </div>
       </div>

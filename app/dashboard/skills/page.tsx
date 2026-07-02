@@ -1,65 +1,59 @@
-export default function SkillsPage() {
-  const skills = [
-    { name: "Data Structures & Algorithms", pct: 80, level: "Good", color: "bg-green-500", topics: ["Arrays", "Trees", "Graphs", "DP"] },
-    { name: "Web Development", pct: 78, level: "Good", color: "bg-green-500", topics: ["React", "Node.js", "REST APIs", "CSS"] },
-    { name: "Machine Learning / AI", pct: 71, level: "Good", color: "bg-blue-500", topics: ["Python", "sklearn", "Neural Nets"] },
-    { name: "SQL & Databases", pct: 55, level: "Average", color: "bg-blue-400", topics: ["Joins", "Indexing", "Transactions"] },
-    { name: "OS Concepts", pct: 42, level: "Weak", color: "bg-orange-500", topics: ["Scheduling", "Memory", "Deadlocks"] },
-    { name: "DevOps / CI-CD", pct: 35, level: "Weak", color: "bg-orange-400", topics: ["Docker", "GitHub Actions", "Linux"] },
-    { name: "System Design", pct: 28, level: "Critical", color: "bg-red-500", topics: ["Load Balancing", "Caching", "Sharding"] },
-  ]
+import { demoSkillMetrics } from "@/lib/devbuddy"
 
+function level(score: number) {
+  if (score <= 30) return { label: "Critical", color: "text-rose-300", bar: "bg-rose-500" }
+  if (score <= 45) return { label: "Weak", color: "text-amber-300", bar: "bg-amber-400" }
+  if (score <= 65) return { label: "Average", color: "text-cyan-300", bar: "bg-cyan-400" }
+  return { label: "Good", color: "text-emerald-300", bar: "bg-emerald-400" }
+}
+
+export default function SkillsPage() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white">🎯 Skills Gap Analysis</h1>
-        <p className="text-gray-400 mt-1">Compared against top company requirements</p>
+        <p className="text-sm font-medium uppercase tracking-[0.16em] text-cyan-300">Skill graph</p>
+        <h1 className="mt-2 text-3xl font-semibold text-white">Skills gap analysis</h1>
+        <p className="mt-2 text-slate-400">
+          Scores combine DSA coverage, project evidence, source analysis, and interview readiness.
+        </p>
       </div>
 
-      {/* Legend */}
-      <div className="flex gap-4 mb-6">
-        {[
-          { label: "Critical (0-30%)", color: "bg-red-500" },
-          { label: "Weak (31-45%)", color: "bg-orange-500" },
-          { label: "Average (46-65%)", color: "bg-blue-400" },
-          { label: "Good (66%+)", color: "bg-green-500" },
-        ].map((l) => (
-          <div key={l.label} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${l.color}`} />
-            <span className="text-gray-400 text-xs">{l.label}</span>
+      <div className="mb-6 grid gap-3 md:grid-cols-4">
+        {["Critical 0-30", "Weak 31-45", "Average 46-65", "Good 66+"].map((item) => (
+          <div key={item} className="rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-300">
+            {item}
           </div>
         ))}
       </div>
 
-      {/* Skills */}
-      <div className="flex flex-col gap-4">
-        {skills.map((skill) => (
-          <div key={skill.name} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-white font-medium text-sm">{skill.name}</h3>
-                <div className="flex gap-2 mt-1">
-                  {skill.topics.map((t) => (
-                    <span key={t} className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
-                      {t}
-                    </span>
-                  ))}
+      <div className="grid gap-4">
+        {demoSkillMetrics.map((skill) => {
+          const state = level(skill.score)
+
+          return (
+            <section key={skill.name} className="rounded-lg border border-slate-800 bg-slate-900 p-5">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <h2 className="text-base font-semibold text-white">{skill.name}</h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {skill.topics.map((topic) => (
+                      <span key={topic} className="rounded bg-slate-800 px-2 py-1 text-xs text-slate-300">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-left md:text-right">
+                  <p className="text-2xl font-semibold text-white">{skill.score}%</p>
+                  <p className={`text-sm ${state.color}`}>{state.label}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-white font-semibold text-lg">{skill.pct}%</span>
-                <p className={`text-xs mt-0.5 ${
-                  skill.level === "Critical" ? "text-red-400" :
-                  skill.level === "Weak" ? "text-orange-400" :
-                  skill.level === "Average" ? "text-blue-400" : "text-green-400"
-                }`}>{skill.level}</p>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
+                <div className={`h-full rounded-full ${state.bar}`} style={{ width: `${skill.score}%` }} />
               </div>
-            </div>
-            <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-              <div className={`h-full ${skill.color} rounded-full transition-all`} style={{ width: `${skill.pct}%` }} />
-            </div>
-          </div>
-        ))}
+            </section>
+          )
+        })}
       </div>
     </div>
   )

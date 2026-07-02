@@ -9,7 +9,7 @@ export async function GET() {
       message: "Database connected!",
       users: userCount 
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ 
       success: false, 
       error: "Database connection failed" 

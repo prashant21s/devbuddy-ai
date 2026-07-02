@@ -1,90 +1,132 @@
+import Link from "next/link"
+import {
+  candidate,
+  pipeline,
+  placementScore,
+  scoreBreakdown,
+  sourceAnalyses,
+  weakAreas,
+} from "@/lib/demo-data"
+import { demoSkillMetrics } from "@/lib/devbuddy"
+
+const scoreCards = [
+  { label: "Placement Score", value: `${placementScore}/100`, note: "Weighted readiness score" },
+  { label: "DSA", value: `${scoreBreakdown.dsa}/100`, note: "LeetCode and topic spread" },
+  { label: "Projects", value: `${scoreBreakdown.projects}/100`, note: "Resume and GitHub evidence" },
+  { label: "Communication", value: `${scoreBreakdown.communication}/100`, note: "Interview response quality" },
+]
+
+const actions = [
+  { href: "/dashboard/profile", title: "Analyze profile", desc: "Run resume, GitHub, LeetCode, and portfolio checks" },
+  { href: "/dashboard/interview", title: "Start mock interview", desc: "Practice on your weakest skills" },
+  { href: "/dashboard/jobs", title: "Browse job matches", desc: "Rank jobs against your current skill graph" },
+  { href: "/dashboard/roadmap", title: "Generate roadmap", desc: "Turn gaps into weekly execution blocks" },
+]
+
 export default function DashboardPage() {
   return (
-    <div className="max-w-6xl mx-auto">
-
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white">
-          Welcome back, Prashant 👋
-        </h1>
-        <p className="text-gray-400 mt-1">
-          Your placement readiness updated today
-        </p>
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-[0.16em] text-cyan-300">
+            Full-stack demo
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">Welcome back, {candidate.name}</h1>
+          <p className="mt-2 text-slate-400">
+            Your placement engine is tracking {weakAreas.length} priority gaps for {candidate.targetCompany}.
+          </p>
+        </div>
+        <Link
+          href="/dashboard/profile"
+          className="w-fit rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+        >
+          Refresh analysis
+        </Link>
       </div>
 
-      {/* Score Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p className="text-gray-400 text-xs mb-2">🏆 Placement Score</p>
-          <p className="text-3xl font-semibold text-white">73<span className="text-gray-500 text-lg">/100</span></p>
-          <p className="text-green-400 text-xs mt-2">↑ +5 this week</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p className="text-gray-400 text-xs mb-2">🐙 GitHub Score</p>
-          <p className="text-3xl font-semibold text-white">62<span className="text-gray-500 text-lg">/100</span></p>
-          <p className="text-red-400 text-xs mt-2">↓ 3 repos inactive</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p className="text-gray-400 text-xs mb-2">💻 LeetCode</p>
-          <p className="text-3xl font-semibold text-white">148<span className="text-gray-500 text-lg"> solved</span></p>
-          <p className="text-green-400 text-xs mt-2">↑ +12 this month</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p className="text-gray-400 text-xs mb-2">📄 Resume Score</p>
-          <p className="text-3xl font-semibold text-white">81<span className="text-gray-500 text-lg">/100</span></p>
-          <p className="text-blue-400 text-xs mt-2">ATS optimized</p>
-        </div>
+      <div className="mb-8 grid gap-4 md:grid-cols-4">
+        {scoreCards.map((card) => (
+          <div key={card.label} className="rounded-lg border border-slate-800 bg-slate-900 p-5">
+            <p className="text-xs uppercase tracking-[0.12em] text-slate-500">{card.label}</p>
+            <p className="mt-3 text-3xl font-semibold text-white">{card.value}</p>
+            <p className="mt-2 text-xs text-slate-400">{card.note}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Weak Skills */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-white font-medium mb-4">🎯 Weak Areas to Fix</h2>
-          <div className="flex flex-col gap-3">
-            {[
-              { name: "System Design", pct: 28, color: "bg-red-500" },
-              { name: "DevOps / CI-CD", pct: 35, color: "bg-orange-500" },
-              { name: "OS Concepts",   pct: 42, color: "bg-orange-400" },
-              { name: "SQL / DBs",     pct: 55, color: "bg-blue-500" },
-              { name: "Web Dev",       pct: 78, color: "bg-green-500" },
-              { name: "ML / AI",       pct: 71, color: "bg-green-400" },
-            ].map((skill) => (
-              <div key={skill.name} className="flex items-center gap-3">
-                <span className="text-gray-400 text-xs w-28">{skill.name}</span>
-                <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Weak areas to fix</h2>
+            <Link href="/dashboard/skills" className="text-sm text-cyan-300 hover:text-cyan-200">
+              View all
+            </Link>
+          </div>
+          <div className="grid gap-4">
+            {demoSkillMetrics.slice(0, 6).map((skill) => (
+              <div key={skill.name}>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span className="text-sm text-slate-300">{skill.name}</span>
+                  <span className="text-sm text-slate-500">{skill.score}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-800">
                   <div
-                    className={`h-full ${skill.color} rounded-full`}
-                    style={{ width: `${skill.pct}%` }}
+                    className={`h-full rounded-full ${
+                      skill.score < 35 ? "bg-rose-500" : skill.score < 60 ? "bg-amber-400" : "bg-emerald-400"
+                    }`}
+                    style={{ width: `${skill.score}%` }}
                   />
                 </div>
-                <span className="text-gray-500 text-xs w-8 text-right">{skill.pct}%</span>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Quick Actions */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-white font-medium mb-4">⚡ Quick Actions</h2>
-          <div className="flex flex-col gap-3">
-            {[
-              { label: "Start Mock Interview", desc: "Practice DSA questions", color: "bg-blue-600 hover:bg-blue-700" },
-              { label: "View My Roadmap",      desc: "Week 5-6: System Design", color: "bg-purple-600 hover:bg-purple-700" },
-              { label: "Browse Job Matches",   desc: "4 new matches today", color: "bg-green-600 hover:bg-green-700" },
-              { label: "Upload Resume",        desc: "Get AI feedback", color: "bg-orange-600 hover:bg-orange-700" },
-            ].map((action) => (
-              <button
-                key={action.label}
-                className={`${action.color} text-white rounded-lg px-4 py-3 text-left transition-colors`}
+        <section className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-lg font-semibold text-white">Quick actions</h2>
+          <div className="mt-5 grid gap-3">
+            {actions.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="rounded-lg border border-slate-800 bg-slate-950 p-4 transition hover:border-cyan-500/60"
               >
-                <p className="text-sm font-medium">{action.label}</p>
-                <p className="text-xs opacity-75 mt-0.5">{action.desc}</p>
-              </button>
+                <p className="text-sm font-medium text-white">{action.title}</p>
+                <p className="mt-1 text-xs leading-5 text-slate-400">{action.desc}</p>
+              </Link>
             ))}
           </div>
-        </div>
+        </section>
       </div>
 
+      <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-lg font-semibold text-white">Data sources</h2>
+          <div className="mt-5 grid gap-3">
+            {sourceAnalyses.map((source) => (
+              <div key={source.source} className="flex items-center justify-between rounded border border-slate-800 bg-slate-950 px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-white">{source.source}</p>
+                  <p className="text-xs text-slate-500">{source.status}</p>
+                </div>
+                <span className="text-sm font-semibold text-cyan-300">{source.score}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-lg font-semibold text-white">Backend pipeline</h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {pipeline.map((step, index) => (
+              <div key={step} className="rounded border border-slate-800 bg-slate-950 p-4">
+                <p className="text-xs font-semibold text-cyan-300">0{index + 1}</p>
+                <p className="mt-2 text-sm text-slate-300">{step}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   )
 }

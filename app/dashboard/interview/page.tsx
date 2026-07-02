@@ -1,88 +1,120 @@
 "use client"
+
 import { useState } from "react"
+import { weakAreas } from "@/lib/demo-data"
+
+type Message = {
+  role: "ai" | "user"
+  text: string
+}
 
 export default function InterviewPage() {
-  const [messages, setMessages] = useState([
-    { role: "ai", text: "Hello! I'm your AI interviewer. Let's practice DSA today. 👋\n\nHere's your first question:\n\nGiven an array of integers, return indices of the two numbers that add up to a target. What's your approach?" },
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "ai",
+      text: `I am your senior SDE interviewer. We will focus on ${weakAreas.slice(0, 3).join(", ")}. First question: design a cache for a job recommendation feed. What data would you cache and how would you invalidate it?`,
+    },
   ])
   const [input, setInput] = useState("")
+  const [company, setCompany] = useState("Google")
   const [loading, setLoading] = useState(false)
 
-  const sendMessage = async () => {
-    if (!input.trim()) return
-    const userMsg = input
+  async function sendMessage() {
+    if (!input.trim() || loading) return
+
+    const userMessage = input.trim()
     setInput("")
-    setMessages((prev) => [...prev, { role: "user", text: userMsg }])
+    setMessages((current) => [...current, { role: "user", text: userMessage }])
     setLoading(true)
 
-    // Simulated AI response for now (real AI in Phase 7)
-    setTimeout(() => {
-      setMessages((prev) => [...prev, {
+    const response = await fetch("/api/interview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        company,
+        weakAreas,
+        answer: userMessage,
+        history: messages,
+      }),
+    })
+    const data = await response.json()
+
+    setMessages((current) => [
+      ...current,
+      {
         role: "ai",
-        text: "Good thinking! 💡 Using a hashmap is the optimal approach — O(n) time complexity.\n\nFollow-up: What's the space complexity? And how would you handle duplicate values in the array?"
-      }])
-      setLoading(false)
-    }, 1000)
+        text: `${data.message}${data.feedback ? `\n\nFeedback: ${data.feedback}` : ""}`,
+      },
+    ])
+    setLoading(false)
   }
 
   return (
-    <div className="max-w-3xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold text-white">🤖 Mock Interview</h1>
-        <p className="text-gray-400 mt-1">Practice with AI interviewer — DSA, System Design, HR</p>
+    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl flex-col">
+      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-[0.16em] text-cyan-300">AI mock interview</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">Practice session</h1>
+          <p className="mt-2 text-slate-400">Multi-turn interview flow powered by the backend route handler.</p>
+        </div>
+        <select
+          value={company}
+          onChange={(event) => setCompany(event.target.value)}
+          className="w-fit rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
+        >
+          <option>Google</option>
+          <option>Microsoft</option>
+          <option>Amazon</option>
+          <option>Razorpay</option>
+        </select>
       </div>
 
-      {/* Topic Tabs */}
-      <div className="flex gap-2 mb-4">
-        {["DSA", "System Design", "HR / Behavioral"].map((tab, i) => (
-          <button key={tab} className={`px-4 py-1.5 rounded-full text-sm ${
-            i === 0 ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"
-          }`}>
-            {tab}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {["DSA", "System Design", "Behavioral"].map((topic, index) => (
+          <button
+            key={topic}
+            className={`rounded-lg px-3 py-2 text-xs ${
+              index === 1 ? "bg-cyan-400 text-slate-950" : "bg-slate-900 text-slate-300"
+            }`}
+          >
+            {topic}
           </button>
         ))}
       </div>
 
-      {/* Chat */}
-      <div className="flex-1 bg-gray-900 border border-gray-800 rounded-xl p-4 overflow-y-auto flex flex-col gap-4 mb-4">
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${
-              msg.role === "ai" ? "bg-blue-600 text-white" : "bg-gray-700 text-white"
-            }`}>
-              {msg.role === "ai" ? "AI" : "PK"}
+      <div className="flex-1 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900 p-4">
+        <div className="flex flex-col gap-4">
+          {messages.map((message, index) => (
+            <div key={`${message.role}-${index}`} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-2xl whitespace-pre-line rounded-lg px-4 py-3 text-sm leading-6 ${
+                  message.role === "user" ? "bg-cyan-400 text-slate-950" : "bg-slate-950 text-slate-200"
+                }`}
+              >
+                {message.text}
+              </div>
             </div>
-            <div className={`max-w-lg px-4 py-3 rounded-xl text-sm whitespace-pre-line ${
-              msg.role === "ai"
-                ? "bg-gray-800 text-gray-100"
-                : "bg-blue-600 text-white"
-            }`}>
-              {msg.text}
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs text-white font-bold">AI</div>
-            <div className="bg-gray-800 px-4 py-3 rounded-xl text-gray-400 text-sm">Thinking...</div>
-          </div>
-        )}
+          ))}
+          {loading && <div className="w-fit rounded-lg bg-slate-950 px-4 py-3 text-sm text-slate-400">Thinking...</div>}
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="flex gap-3">
+      <div className="mt-4 flex gap-3">
         <input
-          className="flex-1 bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500"
-          placeholder="Type your answer..."
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") sendMessage()
+          }}
+          className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400"
+          placeholder="Type your answer..."
         />
         <button
           onClick={sendMessage}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm font-medium transition-colors"
+          disabled={loading}
+          className="rounded-lg bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
         >
-          Send ↗
+          Send
         </button>
       </div>
     </div>

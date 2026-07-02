@@ -1,57 +1,93 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { candidate } from "@/lib/demo-data"
+
+type JobMatch = {
+  title: string
+  company: string
+  location: string
+  requiredSkills: string[]
+  missingSkills: string[]
+  matchScore: number
+  source: string
+}
+
 export default function JobsPage() {
-  const jobs = [
-    { company: "Microsoft India", location: "Bangalore", title: "SDE Intern — Full Stack", match: 92, tags: ["React", "Node.js", "Azure"], color: "text-green-400" },
-    { company: "Google", location: "Hyderabad", title: "STEP Intern — Engineering", match: 87, tags: ["DSA", "Python", "System Design"], color: "text-green-400" },
-    { company: "Zepto", location: "Mumbai (Remote)", title: "Backend Dev — New Grad", match: 74, tags: ["Node.js", "PostgreSQL", "Redis"], color: "text-yellow-400" },
-    { company: "Swiggy", location: "Bangalore", title: "ML Engineer Intern", match: 70, tags: ["Python", "TensorFlow", "MLOps"], color: "text-yellow-400" },
-    { company: "Razorpay", location: "Bangalore", title: "SDE-1 — Payments", match: 65, tags: ["Java", "Microservices", "Kafka"], color: "text-orange-400" },
-    { company: "Flipkart", location: "Bangalore", title: "SDE Intern — Platform", match: 61, tags: ["Java", "Spring Boot", "MySQL"], color: "text-orange-400" },
-  ]
+  const [jobs, setJobs] = useState<JobMatch[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadJobs() {
+      const response = await fetch("/api/jobs/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills: candidate.skills }),
+      })
+      const data = await response.json()
+      setJobs(data.matches ?? [])
+      setLoading(false)
+    }
+
+    loadJobs()
+  }, [])
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="mx-auto max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white">💼 Job Recommendations</h1>
-        <p className="text-gray-400 mt-1">AI-matched based on your skills & resume</p>
+        <p className="text-sm font-medium uppercase tracking-[0.16em] text-cyan-300">Job matching</p>
+        <h1 className="mt-2 text-3xl font-semibold text-white">Recommended roles</h1>
+        <p className="mt-2 text-slate-400">
+          Matches are ranked with skill overlap now and ready for embeddings plus Pinecone search later.
+        </p>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex gap-2 mb-6">
-        {["All", "90%+ Match", "Internship", "Full Time", "Remote"].map((f, i) => (
-          <button key={f} className={`px-3 py-1.5 rounded-full text-xs ${
-            i === 0 ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"
-          }`}>
-            {f}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {["All", "80+ Match", "Internship", "New Grad", "Remote"].map((filter, index) => (
+          <button
+            key={filter}
+            className={`rounded-lg px-3 py-2 text-xs transition ${
+              index === 0 ? "bg-cyan-400 text-slate-950" : "bg-slate-900 text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            {filter}
           </button>
         ))}
       </div>
 
-      {/* Job Cards Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {jobs.map((job) => (
-          <div key={job.title} className="bg-gray-900 border border-gray-800 hover:border-gray-600 rounded-xl p-5 cursor-pointer transition-colors">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-gray-500 text-xs">{job.company} · {job.location}</p>
-                <h3 className="text-white font-medium text-sm mt-1">{job.title}</h3>
+      {loading ? (
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-6 text-sm text-slate-400">
+          Matching jobs...
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {jobs.map((job) => (
+            <article key={`${job.company}-${job.title}`} className="rounded-lg border border-slate-800 bg-slate-900 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">{job.company}</p>
+                  <h2 className="mt-2 text-lg font-semibold text-white">{job.title}</h2>
+                  <p className="mt-1 text-sm text-slate-400">{job.location}</p>
+                </div>
+                <span className="text-2xl font-semibold text-cyan-300">{job.matchScore}%</span>
               </div>
-              <span className={`text-sm font-semibold ${job.color}`}>{job.match}%</span>
-            </div>
-            <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
-              <div className={`h-full rounded-full ${
-                job.match >= 80 ? "bg-green-500" : job.match >= 65 ? "bg-yellow-500" : "bg-orange-500"
-              }`} style={{ width: `${job.match}%` }} />
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {job.tags.map((tag) => (
-                <span key={tag} className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
+                <div className="h-full rounded-full bg-cyan-400" style={{ width: `${job.matchScore}%` }} />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {job.requiredSkills.map((skill) => (
+                  <span key={skill} className="rounded bg-slate-950 px-2 py-1 text-xs text-slate-300">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-4 text-xs text-slate-500">
+                Missing: {job.missingSkills.length ? job.missingSkills.join(", ") : "None"}
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

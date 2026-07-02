@@ -12,18 +12,25 @@ model User {
   name      String
   email     String   @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   placementScore Int @default(0)
   githubScore    Int @default(0)
   leetcodeScore  Int @default(0)
   resumeScore    Int @default(0)
+  projectScore   Int @default(0)
+  communicationScore Int @default(0)
 
   githubUsername   String?
   leetcodeUsername String?
   portfolioUrl     String?
+  targetCompany    String?
+  weeklyHours      Int?
 
-  roadmapItems RoadmapItem[]
-  interviews   Interview[]
+  analyses      ProfileAnalysis[]
+  roadmapItems  RoadmapItem[]
+  interviews    Interview[]
+  jobMatches    JobMatch[]
 }
 
 model RoadmapItem {
@@ -41,10 +48,65 @@ model RoadmapItem {
 model Interview {
   id        String   @id @default(cuid())
   userId    String
+  company   String?
   topic     String
+  weakAreas String[]
   score     Int?
   feedback  String?
+  transcript Json?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model ProfileAnalysis {
+  id        String   @id @default(cuid())
+  userId    String
+  source    AnalysisSource
+  status    AnalysisStatus @default(PENDING)
+  score     Int?
+  summary   String?
+  skills    String[]
+  gaps      String[]
+  metrics   Json?
+  rawText   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, source])
+}
+
+model JobMatch {
+  id          String   @id @default(cuid())
+  userId      String
+  externalId  String?
+  title       String
+  company     String
+  location    String?
+  url         String?
+  matchScore  Int
+  requiredSkills String[]
+  missingSkills  String[]
+  source      String   @default("mock")
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, matchScore])
+}
+
+enum AnalysisSource {
+  RESUME
+  GITHUB
+  LEETCODE
+  PORTFOLIO
+}
+
+enum AnalysisStatus {
+  PENDING
+  COMPLETE
+  FAILED
 }
