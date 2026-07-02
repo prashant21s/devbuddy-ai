@@ -1,37 +1,45 @@
-type ClaudeMessage = {
+type ChatMessage = {
   role: "user" | "assistant"
   content: string
 }
 
-export async function callClaude(system: string, messages: ClaudeMessage[]) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  const model = process.env.ANTHROPIC_MODEL
+export async function callGemini(system: string, messages: ChatMessage[]) {
+  const apiKey = process.env.GEMINI_API_KEY
 
-  if (!apiKey || !model) {
+  if (!apiKey) {
     return null
   }
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 800,
-      system,
-      messages,
-    }),
-  })
+  const contents = messages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }))
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: system }],
+        },
+        contents,
+        generationConfig: {
+          maxOutputTokens: 800,
+        },
+      }),
+    }
+  )
 
   if (!response.ok) {
     return null
   }
 
   const data = await response.json()
-  const textBlock = data.content?.find((item: { type?: string }) => item.type === "text")
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
 
-  return typeof textBlock?.text === "string" ? textBlock.text : null
+  return typeof text === "string" ? text : null
 }
