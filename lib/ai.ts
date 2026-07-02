@@ -7,6 +7,7 @@ export async function callGemini(system: string, messages: ChatMessage[]) {
   const apiKey = process.env.GEMINI_API_KEY
 
   if (!apiKey) {
+    console.log("GEMINI ERROR: API key missing")
     return null
   }
 
@@ -35,11 +36,17 @@ export async function callGemini(system: string, messages: ChatMessage[]) {
   )
 
   if (!response.ok) {
+    const errorText = await response.text()
+    console.log("GEMINI ERROR: API call failed", response.status, errorText)
     return null
   }
 
   const data = await response.json()
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+
+  if (typeof text !== "string") {
+    console.log("GEMINI ERROR: Could not parse response", JSON.stringify(data))
+  }
 
   return typeof text === "string" ? text : null
 }
